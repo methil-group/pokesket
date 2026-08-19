@@ -28,6 +28,9 @@ public class ShootPlayer : MonoBehaviour
     private float _currentCursorPosition = 0f;
     private float _timeAt100Percent = 0f;
     private const float MAX_TIME_AT_100 = 0.2f;
+    private bool _shotButtonConsumed = false;
+    private bool _speedWasReduced = false;
+    private float _speedBeforeShooting;
 
     private float DistanceFactor()
     {
@@ -67,11 +70,37 @@ public class ShootPlayer : MonoBehaviour
 
     void Update()
     {
-        if (GameManager.Instance.matchPlaying == false) return;
+        if (GameManager.Instance == null || GameManager.Instance.matchPlaying == false) return;
         
         if (_pokemonPlayer.isBlockingPass || _pokemonPlayer.isBlockingShoot) return;
 
-        if (Input.GetKey(_pokemonPlayer.ControlledByPlayer1 ? RemoteInput.B1 : RemoteInput.B2))
+        KeyCode shotButton = _pokemonPlayer.ControlledByPlayer1 ? RemoteInput.B1 : RemoteInput.B2;
+        if (!isShootingMode && !Input.GetKey(shotButton))
+        {
+            _shotButtonConsumed = false;
+        }
+
+        if (!_pokemonPlayer.IsControlled || !_pokemonPlayer.HasBall)
+        {
+            if (isShootingMode) CancelShootingMode();
+            return;
+        }
+
+        if (Input.GetKeyUp(shotButton))
+        {
+            if (_shotButtonConsumed)
+            {
+                _shotButtonConsumed = false;
+            }
+            else if (isShootingMode)
+            {
+                ExecuteShot();
+            }
+        }
+
+        if (_shotButtonConsumed) return;
+
+        if (Input.GetKey(shotButton))
         {
             if (!isShootingMode)
             {
@@ -82,11 +111,6 @@ public class ShootPlayer : MonoBehaviour
                 UpdateShootingMode();
             }
         }
-        else if (isShootingMode && Input.GetKeyUp(_pokemonPlayer.ControlledByPlayer1 ? RemoteInput.B1 : RemoteInput.B2))
-        {
-            ExecuteShot();
-        }
-
         if (Input.GetKeyDown(_pokemonPlayer.ControlledByPlayer1 ? RemoteInput.A1 : RemoteInput.A2))
         {
             if (isShootingMode)
@@ -98,7 +122,7 @@ public class ShootPlayer : MonoBehaviour
 
     private void StartShootingMode()
     {
-        if (!_pokemonPlayer.canShoot) return;
+        if (!_pokemonPlayer.canShoot || !_pokemonPlayer.IsControlled || !_pokemonPlayer.HasBall) return;
 
         isShootingMode = true;
         shootingTimer = 0f;
@@ -112,6 +136,8 @@ public class ShootPlayer : MonoBehaviour
         shootingSlider.value = 0f;
         overLoadSlider.value = 0f;
 
+        _speedBeforeShooting = _pokemonPlayer.speed;
+        _speedWasReduced = true;
         _pokemonPlayer.speed *= speedNerf;
         StartCoroutine(FadeInSlider());
     }
@@ -165,6 +191,17 @@ public class ShootPlayer : MonoBehaviour
 
     private void ExecuteShot()
     {
+        if (!isShootingMode) return;
+
+        isShootingMode = false;
+        _shotButtonConsumed = true;
+
+        if (!_pokemonPlayer.IsControlled || !_pokemonPlayer.HasBall)
+        {
+            StartCoroutine(SimpleFadeOut());
+            return;
+        }
+
         float shootingQuality = CalculateShootingQuality(_currentCursorPosition);
         if (_timeAt100Percent >= MAX_TIME_AT_100)
             shootingQuality = 0f;
@@ -296,8 +333,11 @@ public class ShootPlayer : MonoBehaviour
 
     private void CancelShootingMode()
     {
-        if (isShootingMode)
-            StartCoroutine(SimpleFadeOut());
+        if (!isShootingMode) return;
+
+        isShootingMode = false;
+        _shotButtonConsumed = true;
+        StartCoroutine(SimpleFadeOut());
     }
 
     private void SetupJuiceEffects()
@@ -384,6 +424,11 @@ public class ShootPlayer : MonoBehaviour
     {
         isShootingMode = false;
         _timeAt100Percent = 0f;
+        if (_speedWasReduced)
+        {
+            _pokemonPlayer.speed = _speedBeforeShooting;
+            _speedWasReduced = false;
+        }
         shootingUi.SetActive(false);
         shootingUi.transform.localPosition = _originalSliderPosition;
         shootingUi.transform.localScale = Vector3.one;
