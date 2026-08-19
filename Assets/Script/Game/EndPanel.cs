@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 
@@ -15,10 +16,21 @@ public class EndPanel : MonoBehaviour
     private Vector3 centerPosition;
 
     private bool isEndMenuActive = false;
+    private Coroutine _returnToSelectionCoroutine;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+    }
 
     private void Start()
     {
-        Instance = this;
         RectTransform canvasRect = canvas.GetComponent<RectTransform>();
         RectTransform panelRect = endPanel.GetComponent<RectTransform>();
 
@@ -32,6 +44,12 @@ public class EndPanel : MonoBehaviour
     public void ShowWin(BasketTeam team)
     {
         if (isEndMenuActive == true) return;
+        if (team == null || team.pokeTeam == null || team.pokeTeam.Count == 0)
+        {
+            Debug.LogError("Cannot show the end panel without a winning team.");
+            return;
+        }
+
         isEndMenuActive = true;
         teamWinText.text = team.teamName.ToString().ToUpper() + " TEAM";
         var mvpPokemon = team.pokeTeam.OrderByDescending(player => player.pointScored).First();
@@ -39,9 +57,25 @@ public class EndPanel : MonoBehaviour
         mvpPointNumberText.text = mvpPokemon.pointScored.ToString() + " Points"; 
         GameManager.Instance.CameraManager.SetNewLookAtTransform(mvpPokemon.transform, new Vector3(0, 5, -8), new Vector3(0, 0.1f));
         LeanTween.move(endPanel.GetComponent<RectTransform>(), centerPosition, 1.2f).setEaseOutSine();
-        LeanTween.delayedCall(10f, () =>
+        _returnToSelectionCoroutine = StartCoroutine(ReturnToSelectionAfterDelay());
+    }
+
+    private IEnumerator ReturnToSelectionAfterDelay()
+    {
+        yield return new WaitForSecondsRealtime(10f);
+        if (SceneTransitor.Instance != null)
         {
             SceneTransitor.Instance.LoadScene(1);
-        });
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (_returnToSelectionCoroutine != null)
+        {
+            StopCoroutine(_returnToSelectionCoroutine);
+        }
+
+        if (Instance == this) Instance = null;
     }
 }
