@@ -19,7 +19,9 @@ public class AIAttackState : IPokemonPlayerState
 
     readonly Vector3 UnsetVector3 = new Vector3(-1000, -1000, -1000);
     private Vector3 nextPosition = new Vector3(-1000, -1000, -1000);
-    private Vector3 movement;
+    private const float ShootDistance = 11f;
+    private const float ActionCooldown = 1.5f;
+    private float nextActionTime;
 
     public void Update()
     {
@@ -34,7 +36,27 @@ public class AIAttackState : IPokemonPlayerState
             _pokemonPlayer.UpdateState(new AIDefenseState(_pokemonPlayer));
             return;
         }
+
+        if (TryShoot()) return;
         AIMovement();
+    }
+
+    private bool TryShoot()
+    {
+        if (!_pokemonPlayer.HasBall || Time.time < nextActionTime) return false;
+
+        Transform opponentRim = _pokemonPlayer.Team.GetOpponentRim();
+        if (opponentRim == null) return false;
+
+        Vector3 flatDistance = opponentRim.position - _pokemonPlayer.transform.position;
+        flatDistance.y = 0f;
+        if (flatDistance.magnitude > ShootDistance) return false;
+
+        _pokemonPlayer.ShootBall();
+        BasketBallManager.Instance.ShootTo(opponentRim, true, 1f, _pokemonPlayer);
+        nextActionTime = Time.time + ActionCooldown;
+        nextPosition = UnsetVector3;
+        return true;
     }
 
     public void AIMovement()
@@ -68,10 +90,17 @@ public class AIAttackState : IPokemonPlayerState
     public Vector3 SetupNextPosition()
     {
         GameObject defenseZone = GetZone();
+        if (defenseZone == null)
+        {
+            Debug.LogError("AI attack zone is not configured.");
+            return _pokemonPlayer.transform.position;
+        }
+
         Renderer renderer = defenseZone.GetComponent<Renderer>();
         if (renderer == null)
         {
             Debug.LogError("Le GameObject n'a pas de Renderer.");
+            return _pokemonPlayer.transform.position;
         }
 
         Bounds bounds = renderer.bounds;

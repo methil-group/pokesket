@@ -47,10 +47,17 @@ public class AIDefenseState : IPokemonPlayerState
     public Vector3 SetupNextPosition()
     {
         GameObject defenseZone = GetZone();
+        if (defenseZone == null)
+        {
+            Debug.LogError("AI defense zone is not configured.");
+            return _pokemonPlayer.transform.position;
+        }
+
         Renderer renderer = defenseZone.GetComponent<Renderer>();
         if (renderer == null)
         {
             Debug.LogError("Le GameObject n'a pas de Renderer.");
+            return _pokemonPlayer.transform.position;
         }
 
         Bounds bounds = renderer.bounds;
