@@ -87,7 +87,7 @@ public class BlockPass : MonoBehaviour
         if (other.CompareTag("Pokemon"))
         {
             PokemonPlayer opponent = other.GetComponent<PokemonPlayer>();
-            if (opponent != null && opponent.isPassing && _pokemonPlayer.isBlockingPass)
+            if (opponent != null && opponent.Team != _pokemonPlayer.Team && opponent.isPassing && _pokemonPlayer.isBlockingPass)
             {
                 Debug.Log("Pass blocked");
                 BasketBallManager.Instance.SetBallHolder(_pokemonPlayer);

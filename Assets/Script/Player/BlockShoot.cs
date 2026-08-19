@@ -86,7 +86,7 @@ public class BlockShoot : MonoBehaviour
         if (other.CompareTag("Pokemon"))
         {
             PokemonPlayer opponent = other.GetComponent<PokemonPlayer>();
-            if (opponent != null && opponent.isShooting && _pokemonPlayer.isBlockingShoot)
+            if (opponent != null && opponent.Team != _pokemonPlayer.Team && opponent.isShooting && _pokemonPlayer.isBlockingShoot)
             {
                 Debug.Log("Ball blocked");
                 BasketBallManager.Instance.SetBallHolder(_pokemonPlayer);
