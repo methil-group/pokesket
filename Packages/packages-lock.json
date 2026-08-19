@@ -1,13 +1,13 @@
 {
   "dependencies": {
     "com.coffee.ui-effect": {
-      "version": "https://github.com/mob-sakai/UIEffect.git?path=Packages/src#5.9.0",
+      "version": "https://github.com/mob-sakai/UIEffect.git?path=Packages/src#5.10.9",
       "depth": 0,
       "source": "git",
       "dependencies": {
         "com.unity.ugui": "1.0.0"
       },
-      "hash": "bbb5ae0f3e0389c797be1343f18634968bef18c0"
+      "hash": "2cc5c5b68e0ee77d4ed07ebcebd992b764c02fc9"
     },
     "com.unity.2d.animation": {
       "version": "15.1.0",
