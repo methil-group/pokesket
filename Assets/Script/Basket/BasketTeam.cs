@@ -36,7 +36,7 @@ public class BasketTeam : MonoBehaviour
         set
         {
             // Whenever we set team score, it update the TextMeshPro for the score
-            teamScoreText.text = value.ToString();
+            if (teamScoreText != null) teamScoreText.text = value.ToString();
             _teamScore = value;
         }
     }
@@ -50,9 +50,22 @@ public class BasketTeam : MonoBehaviour
 
     public void StartMatch()
     {
-        LayoutRebuilder.ForceRebuildLayoutImmediate(dunkLayout.transform as RectTransform);
-        LayoutRebuilder.ForceRebuildLayoutImmediate(dunkLayout.transform.GetChild(0).transform as RectTransform);
-        LayoutRebuilder.ForceRebuildLayoutImmediate(dunkLayout.transform as RectTransform);
+        if (pokeTeam == null || pokeTeam.Count < 3)
+        {
+            Debug.LogError($"Team {name} must have at least three Pokémon players.");
+            return;
+        }
+
+        if (dunkLayout != null)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(dunkLayout.transform as RectTransform);
+            if (dunkLayout.transform.childCount > 0)
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate(dunkLayout.transform.GetChild(0).transform as RectTransform);
+            }
+            LayoutRebuilder.ForceRebuildLayoutImmediate(dunkLayout.transform as RectTransform);
+        }
+
         if (GameManager.Instance == null || GameManager.Instance.IsTeamHumanControlled(this))
         {
             SetControlledPlayer(pokeTeam[0]);
@@ -61,7 +74,7 @@ public class BasketTeam : MonoBehaviour
         {
             controlledPlayer = null;
         }
-        for (int i = 0; i < pokeTeam.Count; i++)
+        for (int i = 0; pokemonImages != null && i < pokeTeam.Count && i < pokemonImages.Length; i++)
         {
             pokemonImages[i].sprite = pokeTeam[i].actualPokemon.pokemonPortrait;
         }
@@ -83,8 +96,8 @@ public class BasketTeam : MonoBehaviour
             }
         }
 
-        dunkBarSlider.value = _dunkBar / 100f;
-        dunkButtonImage.enabled = _dunkBar == 100;
+        if (dunkBarSlider != null) dunkBarSlider.value = _dunkBar / 100f;
+        if (dunkButtonImage != null) dunkButtonImage.enabled = _dunkBar == 100;
     }
 
     void SwitchControlledPlayer()
@@ -92,7 +105,9 @@ public class BasketTeam : MonoBehaviour
         // Cherche le Pokémon (autre que le contrôlé) le plus proche de la balle
         PokemonPlayer nearestPokemon = pokeTeam
             .Where(p => p != controlledPlayer)
-            .OrderBy(p => Vector3.Distance(p.transform.position, BasketBallManager.Instance.basketBall.transform.position))
+            .OrderBy(p => BasketBallManager.Instance != null && BasketBallManager.Instance.basketBall != null
+                ? Vector3.Distance(p.transform.position, BasketBallManager.Instance.basketBall.transform.position)
+                : float.MaxValue)
             .FirstOrDefault();
 
         // Si aucun trouvé (rare), on passe au suivant dans la liste
@@ -105,15 +120,30 @@ public class BasketTeam : MonoBehaviour
 
     public void SetControlledPlayer(PokemonPlayer newControlled)
     {
+        if (newControlled == null) return;
+
         controlledPlayer = newControlled;
-        Image image = uiSelectedImage;
-        TextMeshProUGUI text = uiSelectedText;
-        image.sprite = newControlled.actualPokemon.pokemonPortrait;
-        text.text = newControlled.actualPokemon.pokemonName;
-        LayoutRebuilder.ForceRebuildLayoutImmediate(uiSelectedLayout.GetComponent<RectTransform>());
-        LayoutRebuilder.ForceRebuildLayoutImmediate(uiSelectedLayout.transform.GetChild(1).GetChild(0).GetComponent<RectTransform>());
-        LayoutRebuilder.ForceRebuildLayoutImmediate(uiSelectedLayout.transform.GetChild(0).GetComponent<RectTransform>());
-        LayoutRebuilder.ForceRebuildLayoutImmediate(uiSelectedLayout.GetComponent<RectTransform>());
+        if (uiSelectedImage != null && newControlled.actualPokemon != null)
+        {
+            uiSelectedImage.sprite = newControlled.actualPokemon.pokemonPortrait;
+        }
+        if (uiSelectedText != null && newControlled.actualPokemon != null)
+        {
+            uiSelectedText.text = newControlled.actualPokemon.pokemonName;
+        }
+        if (uiSelectedLayout == null) return;
+
+        RectTransform layoutRect = uiSelectedLayout.GetComponent<RectTransform>();
+        if (layoutRect != null) LayoutRebuilder.ForceRebuildLayoutImmediate(layoutRect);
+        if (uiSelectedLayout.transform.childCount > 1 && uiSelectedLayout.transform.GetChild(1).childCount > 0)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(uiSelectedLayout.transform.GetChild(1).GetChild(0).GetComponent<RectTransform>());
+        }
+        if (uiSelectedLayout.transform.childCount > 0)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(uiSelectedLayout.transform.GetChild(0).GetComponent<RectTransform>());
+        }
+        if (layoutRect != null) LayoutRebuilder.ForceRebuildLayoutImmediate(layoutRect);
     }
 
     public bool IsControlled(PokemonPlayer player)
@@ -123,12 +153,13 @@ public class BasketTeam : MonoBehaviour
 
     public BasketTeam GetOpponentTeam()
     {
-        return GameManager.Instance.GetTeam(opponentTeamName);
+        return GameManager.Instance == null ? null : GameManager.Instance.GetTeam(opponentTeamName);
     }
 
     public Transform GetOpponentRim()
     {
-        return GetOpponentTeam().rim;
+        BasketTeam opponentTeam = GetOpponentTeam();
+        return opponentTeam == null ? null : opponentTeam.rim;
     }
 
     public void ResetDunkBar()
