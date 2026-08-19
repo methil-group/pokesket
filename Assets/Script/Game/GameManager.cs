@@ -6,6 +6,8 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    private const int PlayersPerTeam = 3;
+
     public static GameManager Instance;
     [SerializeField] private BasketTeam[] teams;
     public bool matchPlaying = false;
@@ -65,6 +67,9 @@ public class GameManager : MonoBehaviour
 
     public void StartMatch(List<Pokemon> pokeTeamBlue, List<Pokemon> pokeTeamRed, int _maxPoint = 2, bool _isSinglePlayer = false)
     {
+        if (!ValidateMatchSetup(pokeTeamBlue, pokeTeamRed)) return;
+
+        matchPlaying = false;
         _matchEnded = false;
         IsSinglePlayer = _isSinglePlayer;
         BasketBallManager.Instance.StartMatch();
@@ -84,14 +89,60 @@ public class GameManager : MonoBehaviour
 
         foreach (BasketTeam team in teams)
         {
+            team.teamScore = 0;
+            team.ResetDunkBar();
             team.StartMatch();
             team.rim.parent.GetComponent<BasketRim>().netRimCloth.sphereColliders = new[]
             {
                 new ClothSphereColliderPair(BasketBallManager.Instance.basketBall.GetComponent<SphereCollider>())
             };
         }
-        maxPoint = _maxPoint;
+        maxPoint = Mathf.Max(1, _maxPoint);
         matchPlaying = true;
+    }
+
+    private bool ValidateMatchSetup(List<Pokemon> pokeTeamBlue, List<Pokemon> pokeTeamRed)
+    {
+        if (CameraManager == null || BasketBallManager.Instance == null)
+        {
+            Debug.LogError("Cannot start match: a required game manager is missing.");
+            return false;
+        }
+
+        if (teams == null || teams.Length < 2 || teams[0] == null || teams[1] == null)
+        {
+            Debug.LogError("Cannot start match: both teams must be configured.");
+            return false;
+        }
+
+        if (!IsValidPokemonTeam(pokeTeamBlue) || !IsValidPokemonTeam(pokeTeamRed))
+        {
+            Debug.LogError($"Cannot start match: each selected team must contain exactly {PlayersPerTeam} Pokémon.");
+            return false;
+        }
+
+        for (int i = 0; i < 2; i++)
+        {
+            BasketTeam team = teams[i];
+            if (team.pokeTeam == null || team.pokeTeam.Count != PlayersPerTeam)
+            {
+                Debug.LogError($"Cannot start match: team {team.name} must contain exactly {PlayersPerTeam} player objects.");
+                return false;
+            }
+
+            if (team.rim == null || team.rim.parent == null || team.rim.parent.GetComponent<BasketRim>() == null)
+            {
+                Debug.LogError($"Cannot start match: team {team.name} has no valid rim configuration.");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsValidPokemonTeam(List<Pokemon> team)
+    {
+        return team != null && team.Count == PlayersPerTeam && team.All(pokemon => pokemon != null);
     }
 
     public BasketTeam GetTeam(TeamName teamName)
