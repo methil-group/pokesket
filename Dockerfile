@@ -1,4 +1,4 @@
-FROM unityci/editor:ubuntu-6000.2.2f1-webgl-3.1.0 as builder
+FROM unityci/editor:ubuntu-6000.5.9f1-webgl-3.2.2 as builder
 
 WORKDIR /project
 
@@ -24,4 +24,3 @@ RUN chmod -R 777 /usr/share/nginx/html
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
-    
