@@ -70,7 +70,7 @@ public class BasketBall : MonoBehaviour
         if (shooter != null)
         {
             var zoneDetector = gameObject.GetComponent<Zone2PtsDetector>();
-            if (zoneDetector != null && zoneDetector.IsInOpponent2PtsZone(BasketBallManager.Instance.lastTeamHolder.teamName))
+            if (zoneDetector != null && shooter.Team != null && zoneDetector.IsInOpponent2PtsZone(shooter.Team.teamName))
             {
                 points = 2;
             }
