@@ -309,9 +309,10 @@ public class ShootPlayer : MonoBehaviour
 
     private void IncreaseDunkBar(float cursorPosition)
     {
-        if (cursorPosition > 1f)
+        if (cursorPosition > 1f || cursorPosition < 0f)
         {
             _pokemonPlayer.Team.IncreaseDunkBar(0);
+            return;
         }
         if (cursorPosition >= perfectThreshold && cursorPosition <= 1f)
         {
