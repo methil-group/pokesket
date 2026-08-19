@@ -29,11 +29,11 @@ public class FadeSprite : MonoBehaviour
 
     private void Update()
     {
-        if (showRandom)
+        if (showRandom && spriteRenderer != null)
         {
             spriteRenderer.material.SetFloat("_Fade", 1f);
             spriteRenderer.sprite = PokemonDatabase.Instance.randomPokemonSprite;
-            typeImage.sprite = PokemonDatabase.Instance.randomPokemonType;
+            if (typeImage != null) typeImage.sprite = PokemonDatabase.Instance.randomPokemonType;
             return;
         }
         
@@ -51,22 +51,32 @@ public class FadeSprite : MonoBehaviour
 
     public void Show(Pokemon pokemon)
     {
+        if (pokemon == null || spriteRenderer == null) return;
+
+        showRandom = false;
         _pokemon = pokemon;
-        pokemonPosition.gameObject.SetActive(true);
+        if (pokemonPosition != null) pokemonPosition.gameObject.SetActive(true);
         spriteRenderer.sprite = pokemon.pokemonSprite;
         spriteRenderer.material.SetColor("_GlowColor" ,pokemon.pokemonType.typeColor);
-        typeImage.sprite = pokemon.pokemonType.typeIcon;
-        typeImage.color = new Color(1f, 1f, 1f, 1f);
+        if (typeImage != null)
+        {
+            typeImage.sprite = pokemon.pokemonType.typeIcon;
+            typeImage.color = new Color(1f, 1f, 1f, 1f);
+        }
         targetFade = 1f;
         isActive = true;
     }
 
     public void Hide()
     {
+        showRandom = false;
         _pokemon = null;
-        pokemonPosition.gameObject.SetActive(false);
-        typeImage.sprite = null;
-        typeImage.color = new Color(1f, 1f, 1f, 0f);
+        if (pokemonPosition != null) pokemonPosition.gameObject.SetActive(false);
+        if (typeImage != null)
+        {
+            typeImage.sprite = null;
+            typeImage.color = new Color(1f, 1f, 1f, 0f);
+        }
         targetFade = 0f;
         isActive = false;
     }
@@ -74,5 +84,7 @@ public class FadeSprite : MonoBehaviour
     public void SetRandom()
     {
         showRandom = true;
+        if (pokemonPosition != null) pokemonPosition.gameObject.SetActive(true);
+        if (typeImage != null) typeImage.color = new Color(1f, 1f, 1f, 1f);
     }
 }
