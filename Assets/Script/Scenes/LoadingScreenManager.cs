@@ -20,7 +20,7 @@ public class LoadingScreenManager : MonoBehaviour
         if(_sceneIsSwapping == true)
             return;
         DontDestroyOnLoad(this.gameObject);
-        StartCoroutine(LoadScene(sceneToLoad, onEndCallback));
+        StartCoroutine(LoadScene(sceneToLoad, onEndCallback ?? ((gm, spp) => {})));
     }
 
     private IEnumerator LoadScene(int sceneToLoad, Action<GameManager, SelectablePokemonPanel> onEndCallback){
@@ -32,6 +32,12 @@ public class LoadingScreenManager : MonoBehaviour
         yield return new WaitForSecondsRealtime(1f); 
 
         AsyncOperation asyncSceneToLoad = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneToLoad);
+        if (asyncSceneToLoad == null)
+        {
+            Debug.LogError($"Unable to load scene with build index {sceneToLoad}.");
+            Destroy(gameObject);
+            yield break;
+        }
         asyncSceneToLoad.allowSceneActivation = false; // stop the level from activating
 
         while (asyncSceneToLoad.progress < 0.9f){
@@ -44,11 +50,18 @@ public class LoadingScreenManager : MonoBehaviour
         yield return new WaitForEndOfFrame();
         yield return new WaitForFixedUpdate();
         yield return new WaitForSecondsRealtime(0.2f);
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSecondsRealtime(0.2f);
         GameManager gm = GameManager.Instance;
         SelectablePokemonPanel spp = SelectablePokemonPanel.Instance;
-        onEndCallback.Invoke(gm, spp);
-        yield return new WaitForSeconds(0.2f);
+        try
+        {
+            onEndCallback?.Invoke(gm, spp);
+        }
+        catch (Exception exception)
+        {
+            Debug.LogException(exception);
+        }
+        yield return new WaitForSecondsRealtime(0.2f);
         LeanTween.moveY(loadingScreenImage.rectTransform, -startPosition, 1f)
             .setEase( LeanTweenType.easeInQuart )
             .setIgnoreTimeScale(true);
