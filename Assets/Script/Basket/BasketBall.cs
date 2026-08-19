@@ -200,14 +200,12 @@ public class BasketBall : MonoBehaviour
     private IEnumerator TemporarilyIgnoreRimCollisions()
     {
         // Obtenir tous les colliders avec la Layer "Rim"
-        int rimLayerIndex = Mathf.RoundToInt(Mathf.Log(rimLayer.value, 2));
-
         Collider[] rimColliders = FindObjectsByType<Collider>(FindObjectsSortMode.None);
         Collider ballCollider = GetComponent<Collider>();
 
         foreach (var c in rimColliders)
         {
-            if (c.gameObject.layer == rimLayerIndex)
+            if ((rimLayer.value & (1 << c.gameObject.layer)) != 0)
             {
                 Physics.IgnoreCollision(ballCollider, c, true);
             }
@@ -219,7 +217,7 @@ public class BasketBall : MonoBehaviour
         // Réactiver les collisions
         foreach (var c in rimColliders)
         {
-            if (c.gameObject.layer == rimLayerIndex)
+            if ((rimLayer.value & (1 << c.gameObject.layer)) != 0)
             {
                 Physics.IgnoreCollision(ballCollider, c, false);
             }
