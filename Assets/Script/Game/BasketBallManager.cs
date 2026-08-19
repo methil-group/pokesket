@@ -136,18 +136,36 @@ public class BasketBallManager : MonoBehaviour
 
     public void ShootTo(Transform target, bool isSuccessful, float force, PokemonPlayer shooter)
     {
+        if (target == null || shooter == null || basketBall == null || ballHolder != shooter)
+        {
+            Debug.LogWarning("Cannot shoot: the requested player does not hold the ball.");
+            return;
+        }
+
         SetBallHolder(null);
         basketBall.ShootTowardsBasket(target.position, isSuccessful, force, shooter);
     }
 
     public void PassTo(Transform target)
     {
+        if (target == null || basketBall == null || ballHolder == null)
+        {
+            Debug.LogWarning("Cannot pass: no player currently holds the ball.");
+            return;
+        }
+
         SetBallHolder(null);
         basketBall.PassTo(target.position);
     }
     
     public void DunkTo(Transform target)
     {
+        if (target == null || basketBall == null || ballHolder == null)
+        {
+            Debug.LogWarning("Cannot dunk: no player currently holds the ball.");
+            return;
+        }
+
         SetBallHolder(null);
         basketBall.DunkInto(target.position);
     }

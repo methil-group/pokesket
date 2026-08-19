@@ -32,7 +32,7 @@ public class DunkPlayer : MonoBehaviour
 
     void TryDunk()
     {
-        if (!_pokemonPlayer.canDunk || !_pokemonPlayer.Team.canDunk) return;
+        if (!_pokemonPlayer.canDunk || !_pokemonPlayer.Team.canDunk || !_pokemonPlayer.IsControlled || !_pokemonPlayer.HasBall) return;
 
         Transform rim = _pokemonPlayer.Team.GetOpponentRim();
         Vector3 rimPosition = rim.position;

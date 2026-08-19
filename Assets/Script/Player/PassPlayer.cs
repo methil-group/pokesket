@@ -23,7 +23,7 @@ public class PassPlayer : MonoBehaviour
 
     public void PassBall()
     {
-        if (!_pokemonPlayer.canPass) return;
+        if (!_pokemonPlayer.canPass || !_pokemonPlayer.IsControlled || !_pokemonPlayer.HasBall) return;
         
         PokemonPlayer target = GetTargetAllie();
         if (target == null)
