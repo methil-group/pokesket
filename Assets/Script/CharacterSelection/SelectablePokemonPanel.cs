@@ -6,6 +6,8 @@ using UnityEngine.UI;
 
 public class SelectablePokemonPanel : MonoBehaviour
 {
+    private const int TeamSize = 3;
+
     public static SelectablePokemonPanel Instance;
     public GameObject selectablePokemonPrefab;
     
@@ -27,6 +29,7 @@ public class SelectablePokemonPanel : MonoBehaviour
     public void Start()
     {
         Instance = this;
+        EnsureSelectionArrays();
 
         foreach (Transform child in this.transform)
         {
@@ -47,6 +50,10 @@ public class SelectablePokemonPanel : MonoBehaviour
 
     public void SetupCharacterSelectableFor2Players()
     {
+        is1Player = false;
+        if (player1Cursor != null) player1Cursor.SetActive(true);
+        if (player2Cursor != null) player2Cursor.SetActive(true);
+        Array.Clear(selectedPlayer2Characters, 0, selectedPlayer2Characters.Length);
         UpdateCharacterPreviews();
         CheckButtonState();
     }
@@ -54,21 +61,21 @@ public class SelectablePokemonPanel : MonoBehaviour
     public void SetupCharacterSelectableFor1Player()
     {
         is1Player = true;
-        player2Cursor.SetActive(false);
+        if (player1Cursor != null) player1Cursor.SetActive(true);
+        if (player2Cursor != null) player2Cursor.SetActive(false);
+        FillRandomPlayer2Team();
         UpdateCharacterPreviews();
         CheckButtonState();
     }
 
     private void Update()
     {
-        RefreshPreviews();
-
         if (Input.GetKeyUp(RemoteInput.B1))
         {
             RemoveLastSelectedPokemon(selectedPlayer1Characters);
         }
 
-        if (Input.GetKeyUp(RemoteInput.B2))
+        if (!is1Player && Input.GetKeyUp(RemoteInput.B2))
         {
             RemoveLastSelectedPokemon(selectedPlayer2Characters);
         }
@@ -106,7 +113,8 @@ public class SelectablePokemonPanel : MonoBehaviour
         {
             for (int i = 0; i < previewObjects.Length; i++)
             {
-                previewObjects[i].GetComponent<FadeSprite>().SetRandom();
+                FadeSprite fadeSprite = previewObjects[i].GetComponent<FadeSprite>();
+                if (fadeSprite != null) fadeSprite.SetRandom();
             }
 
             return;
@@ -149,27 +157,8 @@ public class SelectablePokemonPanel : MonoBehaviour
 
     public bool EveryoneSelected()
     {
-        bool allSelected = true;
-        
-        if(selectedPlayer1Characters.Length < 3)
-        {
-            allSelected = false;
-        }
-        foreach (Pokemon pokemon in selectedPlayer1Characters)
-        {
-            if (pokemon == null) allSelected = false;
-        }
-        
-        
-        if(selectedPlayer2Characters.Length < 3)
-        {
-            allSelected = false;
-        }
-        foreach (Pokemon pokemon in selectedPlayer2Characters)
-        {
-            if (pokemon == null) allSelected = false;
-        }
-        return allSelected;
+        if (!AreAllCharactersSelected(selectedPlayer1Characters)) return false;
+        return is1Player || AreAllCharactersSelected(selectedPlayer2Characters);
     }
     
     public void RefreshPreviews()
@@ -184,21 +173,17 @@ public class SelectablePokemonPanel : MonoBehaviour
         {
             SceneTransitor.Instance.LoadScene(gameSceneIndex, (gm, spp) =>
             {
-                if (gm == null) Debug.LogWarning("Error getting game manager");
-                if (selectedPlayer1Characters.Length == 3 && selectedPlayer2Characters.Length == 3)
+                if (gm == null)
                 {
-                    gm.StartMatch(
-                        selectedPlayer1Characters.ToList(),
-                        selectedPlayer2Characters.ToList(),
-                        maxPoint
-                    );
+                    Debug.LogWarning("Error getting game manager");
+                    return;
                 }
-                else
-                {
-                    Debug.LogWarning("Count of different selected characters isn't good : 3");
-                    Debug.LogWarning("Length player 1 character : " + selectedPlayer1Characters.Length.ToString());
-                    Debug.LogWarning("Length player 2 character : " + selectedPlayer2Characters.Length.ToString());
-                }
+
+                gm.StartMatch(
+                    selectedPlayer1Characters.ToList(),
+                    selectedPlayer2Characters.ToList(),
+                    maxPoint
+                );
             });
         }
     }
@@ -215,7 +200,7 @@ public class SelectablePokemonPanel : MonoBehaviour
     
     public void SelectPokemonForPlayer2(int slot, Pokemon pokemon)
     {
-        if (slot >= 0 && slot < selectedPlayer2Characters.Length)
+        if (!is1Player && slot >= 0 && slot < selectedPlayer2Characters.Length)
         {
             selectedPlayer2Characters[slot] = pokemon;
             UpdateCharacterPreviews();
@@ -226,5 +211,47 @@ public class SelectablePokemonPanel : MonoBehaviour
     public void ReturnFirstScene()
     {
         SceneTransitor.Instance.LoadScene(0);
+    }
+
+    private void EnsureSelectionArrays()
+    {
+        selectedPlayer1Characters = ResizeSelectionArray(selectedPlayer1Characters);
+        selectedPlayer2Characters = ResizeSelectionArray(selectedPlayer2Characters);
+    }
+
+    private static Pokemon[] ResizeSelectionArray(Pokemon[] characters)
+    {
+        if (characters != null && characters.Length == TeamSize) return characters;
+
+        Pokemon[] resizedCharacters = new Pokemon[TeamSize];
+        if (characters != null)
+        {
+            Array.Copy(characters, resizedCharacters, Mathf.Min(characters.Length, TeamSize));
+        }
+        return resizedCharacters;
+    }
+
+    private void FillRandomPlayer2Team()
+    {
+        Pokemon[] availablePokemons = PokemonDatabase.Instance?.pokemons;
+        if (availablePokemons == null || availablePokemons.Length == 0) return;
+
+        Pokemon[] randomizedPokemons = availablePokemons
+            .Where(pokemon => pokemon != null)
+            .OrderBy(_ => UnityEngine.Random.value)
+            .Take(TeamSize)
+            .ToArray();
+
+        Array.Clear(selectedPlayer2Characters, 0, selectedPlayer2Characters.Length);
+        for (int i = 0; i < randomizedPokemons.Length; i++)
+        {
+            selectedPlayer2Characters[i] = randomizedPokemons[i];
+        }
+    }
+
+    private static bool AreAllCharactersSelected(Pokemon[] characters)
+    {
+        if (characters == null || characters.Length != TeamSize) return false;
+        return characters.All(pokemon => pokemon != null);
     }
 }
