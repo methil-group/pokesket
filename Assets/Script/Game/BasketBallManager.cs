@@ -68,14 +68,27 @@ public class BasketBallManager : MonoBehaviour
         StartMatch(preservePickupRestriction: true);
     }
 
-    public void StartMatch(bool preservePickupRestriction = false)
+    public bool StartMatch(bool preservePickupRestriction = false)
     {
+        if (ballPrefab == null || ballSpawnPoint == null)
+        {
+            Debug.LogError("Cannot start ball manager: ball prefab or spawn point is missing.");
+            return false;
+        }
+
         if (basketBall != null) Destroy(basketBall.gameObject);
         lastTimeBlocked = -1f;
         ballHolder = null;
         lastBallHolder = null;
         if (!preservePickupRestriction) canBeHoldByTeam = null;
         basketBall = Instantiate(ballPrefab, ballSpawnPoint.position, ballSpawnPoint.rotation).GetComponent<BasketBall>();
+        if (basketBall == null)
+        {
+            Debug.LogError("Cannot start ball manager: ball prefab has no BasketBall component.");
+            return false;
+        }
+
+        return true;
     }
 
     public void SetBallHolder(PokemonPlayer holder)

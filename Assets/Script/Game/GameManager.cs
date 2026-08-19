@@ -74,7 +74,7 @@ public class GameManager : MonoBehaviour
         matchPlaying = false;
         _matchEnded = false;
         IsSinglePlayer = _isSinglePlayer;
-        BasketBallManager.Instance.StartMatch();
+        if (!BasketBallManager.Instance.StartMatch()) return;
         for (int i = 0; i < pokeTeamBlue.Count; i++)
         {
             var pokemon = pokeTeamBlue[i];
@@ -132,7 +132,10 @@ public class GameManager : MonoBehaviour
                 return false;
             }
 
-            if (team.rim == null || team.rim.parent == null || team.rim.parent.GetComponent<BasketRim>() == null)
+            BasketRim basketRim = team.rim == null || team.rim.parent == null
+                ? null
+                : team.rim.parent.GetComponent<BasketRim>();
+            if (basketRim == null || basketRim.netRimCloth == null)
             {
                 Debug.LogError($"Cannot start match: team {team.name} has no valid rim configuration.");
                 return false;
