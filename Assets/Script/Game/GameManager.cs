@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private BasketTeam[] teams;
     public bool matchPlaying = false;
     public bool IsSinglePlayer { get; private set; }
+    private bool _matchEnded;
 
     public int maxPoint = 21;
     public bool IsMatchEnd
@@ -43,12 +44,13 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        CameraManager.Start();
+        if (CameraManager != null) CameraManager.Start();
+        else Debug.LogError("GameManager has no CameraManager configured.");
     }
 
     void Update()
     {
-        if (IsMatchEnd)
+        if (!_matchEnded && IsMatchEnd)
         {
             EndMatch();
         }
@@ -63,6 +65,7 @@ public class GameManager : MonoBehaviour
 
     public void StartMatch(List<Pokemon> pokeTeamBlue, List<Pokemon> pokeTeamRed, int _maxPoint = 2, bool _isSinglePlayer = false)
     {
+        _matchEnded = false;
         IsSinglePlayer = _isSinglePlayer;
         BasketBallManager.Instance.StartMatch();
         for (int i = 0; i < pokeTeamBlue.Count; i++)
@@ -103,7 +106,18 @@ public class GameManager : MonoBehaviour
 
     public void EndMatch()
     {
+        if (_matchEnded) return;
+
+        _matchEnded = true;
         matchPlaying = false;
-        EndPanel.Instance.ShowWin(teams.ToList().Find(team => team.teamScore >= maxPoint));
+        BasketTeam winningTeam = teams.ToList().Find(team => team.teamScore >= maxPoint);
+        if (EndPanel.Instance != null && winningTeam != null)
+        {
+            EndPanel.Instance.ShowWin(winningTeam);
+        }
+        else
+        {
+            Debug.LogError("Cannot display match end: no winning team or end panel configured.");
+        }
     }
 }
