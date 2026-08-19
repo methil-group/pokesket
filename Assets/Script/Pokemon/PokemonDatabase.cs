@@ -1,5 +1,7 @@
 using System;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "PokemonDatabase", menuName = "Pokemon/PokemonDatabase")]
@@ -17,6 +19,7 @@ public class PokemonDatabase : ScriptableObject
                 if (_instance == null)
                 {
                     Debug.LogError("PokemonDatabase instance not found in Resources folder!");
+                    return null;
                 }
             }
             _instance.AssignUniqueIDs();
@@ -35,7 +38,7 @@ public class PokemonDatabase : ScriptableObject
         {
             for (int i = 0; i < pokemons.Length; i++)
             {
-                pokemons[i].id = i;
+                if (pokemons[i] != null) pokemons[i].id = i;
             }
         }
     }

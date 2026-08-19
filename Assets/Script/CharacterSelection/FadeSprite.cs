@@ -31,9 +31,12 @@ public class FadeSprite : MonoBehaviour
     {
         if (showRandom && spriteRenderer != null)
         {
+            PokemonDatabase database = PokemonDatabase.Instance;
+            if (database == null) return;
+
             spriteRenderer.material.SetFloat("_Fade", 1f);
-            spriteRenderer.sprite = PokemonDatabase.Instance.randomPokemonSprite;
-            if (typeImage != null) typeImage.sprite = PokemonDatabase.Instance.randomPokemonType;
+            spriteRenderer.sprite = database.randomPokemonSprite;
+            if (typeImage != null) typeImage.sprite = database.randomPokemonType;
             return;
         }
         

@@ -36,7 +36,15 @@ public class SelectablePokemonPanel : MonoBehaviour
             Destroy(child.gameObject);
         }
         
-        Pokemon[] pokemons = PokemonDatabase.Instance.pokemons;
+        PokemonDatabase database = PokemonDatabase.Instance;
+        if (database == null || database.pokemons == null)
+        {
+            Debug.LogError("Cannot populate character selection without a Pokemon database.");
+            CheckButtonState();
+            return;
+        }
+
+        Pokemon[] pokemons = database.pokemons;
 
         foreach (Pokemon pokemon in pokemons)
         {
