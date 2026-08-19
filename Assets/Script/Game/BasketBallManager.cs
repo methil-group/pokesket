@@ -65,13 +65,16 @@ public class BasketBallManager : MonoBehaviour
         ballHolder = null;
         lastBallHolder = null;
         lastTimeBlocked = -1f;
-        StartMatch();
+        StartMatch(preservePickupRestriction: true);
     }
 
-    public void StartMatch()
+    public void StartMatch(bool preservePickupRestriction = false)
     {
+        if (basketBall != null) Destroy(basketBall.gameObject);
         lastTimeBlocked = -1f;
         ballHolder = null;
+        lastBallHolder = null;
+        if (!preservePickupRestriction) canBeHoldByTeam = null;
         basketBall = Instantiate(ballPrefab, ballSpawnPoint.position, ballSpawnPoint.rotation).GetComponent<BasketBall>();
     }
 
