@@ -95,7 +95,8 @@ public class PokemonPlayer : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogWarning("Error animating pokemon : " + actualPokemon.pokemonName + " : " + e);
+            string pokemonName = actualPokemon != null ? actualPokemon.pokemonName : "<unknown>";
+            Debug.LogWarning("Error animating pokemon : " + pokemonName + " : " + e);
         }
     }
 
