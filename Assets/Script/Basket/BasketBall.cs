@@ -25,14 +25,16 @@ public class BasketBall : MonoBehaviour
 
     public void StopEmitTrail()
     {
-        particle.emissionRate = 0;
+        var emission = particle.emission;
+        emission.rateOverTime = 0f;
         trailRenderer.emitting = false;
         ballLight.intensity = 0;
     }
 
     public void StartEmitTrail(PokemonType pokemonType)
     {
-        particle.emissionRate = 12;
+        var emission = particle.emission;
+        emission.rateOverTime = 12f;
         particle.gameObject.GetComponent<ParticleSystemRenderer>().material.SetColor("_TintColor", pokemonType.noHdrTypeColor);
         trailRenderer.material.SetTexture("_TintTex", pokemonType.trailTexture);
         trailRenderer.emitting = true;
@@ -200,7 +202,7 @@ public class BasketBall : MonoBehaviour
     private IEnumerator TemporarilyIgnoreRimCollisions()
     {
         // Obtenir tous les colliders avec la Layer "Rim"
-        Collider[] rimColliders = FindObjectsByType<Collider>(FindObjectsSortMode.None);
+        Collider[] rimColliders = FindObjectsByType<Collider>();
         Collider ballCollider = GetComponent<Collider>();
 
         foreach (var c in rimColliders)
