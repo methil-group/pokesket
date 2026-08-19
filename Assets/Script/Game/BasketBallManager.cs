@@ -32,8 +32,15 @@ public class BasketBallManager : MonoBehaviour
 
     void Update()
     {
-        if (GameManager.Instance.matchPlaying == false) return;
-        if (basketBall.rb.linearVelocity == Vector3.zero && basketBall.transform.position.y > 1f)
+        if (GameManager.Instance == null || GameManager.Instance.matchPlaying == false || basketBall == null)
+        {
+            lastTimeBlocked = -1f;
+            return;
+        }
+
+        bool isStationary = basketBall.rb.linearVelocity.sqrMagnitude <= 0.0001f;
+        bool isHeld = ballHolder != null;
+        if (!isHeld && isStationary && basketBall.transform.position.y > 1f)
         {
             if (lastTimeBlocked == -1f)
             {
@@ -45,17 +52,26 @@ public class BasketBallManager : MonoBehaviour
                 ResetBasketBall();
             }
         }
+        else
+        {
+            lastTimeBlocked = -1f;
+        }
     }
 
     public void ResetBasketBall()
     {
         Debug.LogWarning("ResetBasketBall has been called.");
-        Destroy(basketBall.gameObject);
+        if (basketBall != null) Destroy(basketBall.gameObject);
+        ballHolder = null;
+        lastBallHolder = null;
+        lastTimeBlocked = -1f;
         StartMatch();
     }
 
     public void StartMatch()
     {
+        lastTimeBlocked = -1f;
+        ballHolder = null;
         basketBall = Instantiate(ballPrefab, ballSpawnPoint.position, ballSpawnPoint.rotation).GetComponent<BasketBall>();
     }
 
@@ -94,6 +110,7 @@ public class BasketBallManager : MonoBehaviour
 
     public void ResetHolder()
     {
+        ballHolder = null;
         lastBallHolder = null;
     }
 
