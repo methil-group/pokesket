@@ -237,18 +237,37 @@ public class ShootPlayer : MonoBehaviour
 
     private void PlayShootAnimation()
     {
+        if (_pokemonPlayer.actualPokemon == null || _pokemonPlayer.pokemonPlayerAnimator == null) return;
+
+        Pokemon pokemon = _pokemonPlayer.actualPokemon;
         var move = _pokemonPlayer.Direction;
+        Sprite[] animation;
+
         if (move.magnitude == 0)
         {
-            _pokemonPlayer.pokemonPlayerAnimator.PlayOneShotAnimation(_pokemonPlayer.actualPokemon.shootTopRightAnimation);
-            return;
+            animation = GetShootAnimation(pokemon.shootTopRightAnimation, pokemon.topRightAnimation);
         }
-        if (move.x > 0)
-            _pokemonPlayer.pokemonPlayerAnimator.PlayOneShotAnimation(move.z > 0 ? _pokemonPlayer.actualPokemon.shootTopRightAnimation : _pokemonPlayer.actualPokemon.shootBottomRightAnimation);
+        else if (move.x > 0)
+            animation = move.z > 0
+                ? GetShootAnimation(pokemon.shootTopRightAnimation, pokemon.topRightAnimation)
+                : GetShootAnimation(pokemon.shootBottomRightAnimation, pokemon.bottomRightAnimation);
         else if (move.x < 0)
-            _pokemonPlayer.pokemonPlayerAnimator.PlayOneShotAnimation(move.z > 0 ? _pokemonPlayer.actualPokemon.shootTopLeftAnimation : _pokemonPlayer.actualPokemon.shootBottomLeftAnimation);
+            animation = move.z > 0
+                ? GetShootAnimation(pokemon.shootTopLeftAnimation, pokemon.topLeftAnimation)
+                : GetShootAnimation(pokemon.shootBottomLeftAnimation, pokemon.bottomLeftAnimation);
         else
-            _pokemonPlayer.pokemonPlayerAnimator.PlayOneShotAnimation(move.z > 0 ? _pokemonPlayer.actualPokemon.shootTopLeftAnimation : _pokemonPlayer.actualPokemon.bottomLeftAnimation);
+            animation = move.z > 0
+                ? GetShootAnimation(pokemon.shootTopLeftAnimation, pokemon.topLeftAnimation)
+                : GetShootAnimation(pokemon.shootBottomLeftAnimation, pokemon.bottomLeftAnimation);
+
+        _pokemonPlayer.pokemonPlayerAnimator.PlayOneShotAnimation(animation);
+    }
+
+    private static Sprite[] GetShootAnimation(Sprite[] shootAnimation, Sprite[] movementAnimation)
+    {
+        return shootAnimation != null && shootAnimation.Length > 0
+            ? shootAnimation
+            : movementAnimation;
     }
 
     private float CalculateShootingQuality(float cursorPosition)
