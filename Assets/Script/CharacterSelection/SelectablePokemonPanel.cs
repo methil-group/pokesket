@@ -182,7 +182,8 @@ public class SelectablePokemonPanel : MonoBehaviour
                 gm.StartMatch(
                     selectedPlayer1Characters.ToList(),
                     selectedPlayer2Characters.ToList(),
-                    maxPoint
+                    maxPoint,
+                    is1Player
                 );
             });
         }

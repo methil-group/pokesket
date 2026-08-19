@@ -53,7 +53,14 @@ public class BasketTeam : MonoBehaviour
         LayoutRebuilder.ForceRebuildLayoutImmediate(dunkLayout.transform as RectTransform);
         LayoutRebuilder.ForceRebuildLayoutImmediate(dunkLayout.transform.GetChild(0).transform as RectTransform);
         LayoutRebuilder.ForceRebuildLayoutImmediate(dunkLayout.transform as RectTransform);
-        SetControlledPlayer(pokeTeam[0]);
+        if (GameManager.Instance == null || GameManager.Instance.IsTeamHumanControlled(this))
+        {
+            SetControlledPlayer(pokeTeam[0]);
+        }
+        else
+        {
+            controlledPlayer = null;
+        }
         for (int i = 0; i < pokeTeam.Count; i++)
         {
             pokemonImages[i].sprite = pokeTeam[i].actualPokemon.pokemonPortrait;

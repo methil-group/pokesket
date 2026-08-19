@@ -125,7 +125,10 @@ public class PokemonPlayer : MonoBehaviour
             {
                 StartCoroutine(DisableAction());
                 BasketBallManager.Instance.SetBallHolder(this);
-                Team.SetControlledPlayer(this);
+                if (GameManager.Instance == null || GameManager.Instance.IsTeamHumanControlled(Team))
+                {
+                    Team.SetControlledPlayer(this);
+                }
             }
         }
     }

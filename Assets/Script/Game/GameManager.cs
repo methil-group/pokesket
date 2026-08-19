@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
     [SerializeField] private BasketTeam[] teams;
     public bool matchPlaying = false;
+    public bool IsSinglePlayer { get; private set; }
 
     public int maxPoint = 21;
     public bool IsMatchEnd
@@ -60,8 +61,9 @@ public class GameManager : MonoBehaviour
     }
 #endif
 
-    public void StartMatch(List<Pokemon> pokeTeamBlue, List<Pokemon> pokeTeamRed, int _maxPoint = 2)
+    public void StartMatch(List<Pokemon> pokeTeamBlue, List<Pokemon> pokeTeamRed, int _maxPoint = 2, bool _isSinglePlayer = false)
     {
+        IsSinglePlayer = _isSinglePlayer;
         BasketBallManager.Instance.StartMatch();
         for (int i = 0; i < pokeTeamBlue.Count; i++)
         {
@@ -92,6 +94,11 @@ public class GameManager : MonoBehaviour
     public BasketTeam GetTeam(TeamName teamName)
     {
         return teams[(int)teamName];
+    }
+
+    public bool IsTeamHumanControlled(BasketTeam team)
+    {
+        return !IsSinglePlayer || team != null && team.teamName == TeamName.Blue;
     }
 
     public void EndMatch()
