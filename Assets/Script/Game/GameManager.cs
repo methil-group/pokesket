@@ -19,9 +19,11 @@ public class GameManager : MonoBehaviour
     {
         get
         {
+            if (teams == null) return false;
+
             foreach (BasketTeam team in teams)
             {
-                if (team.teamScore >= maxPoint)
+                if (team != null && team.teamScore >= maxPoint)
                 {
                     return true;
                 }
@@ -147,7 +149,14 @@ public class GameManager : MonoBehaviour
 
     public BasketTeam GetTeam(TeamName teamName)
     {
-        return teams[(int)teamName];
+        int teamIndex = (int)teamName;
+        if (teams == null || teamIndex < 0 || teamIndex >= teams.Length)
+        {
+            Debug.LogError($"Team {teamName} is not configured.");
+            return null;
+        }
+
+        return teams[teamIndex];
     }
 
     public bool IsTeamHumanControlled(BasketTeam team)
@@ -158,6 +167,14 @@ public class GameManager : MonoBehaviour
     public void EndMatch()
     {
         if (_matchEnded) return;
+
+        if (teams == null)
+        {
+            Debug.LogError("Cannot end match: teams are not configured.");
+            _matchEnded = true;
+            matchPlaying = false;
+            return;
+        }
 
         _matchEnded = true;
         matchPlaying = false;
