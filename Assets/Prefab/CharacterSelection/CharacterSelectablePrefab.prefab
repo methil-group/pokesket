@@ -440,7 +440,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 4927990721365116928}
         m_TargetAssemblyTypeName: SelectablePokemonPrefab, Assembly-CSharp
         m_MethodName: SelectPokemon
         m_Mode: 1
