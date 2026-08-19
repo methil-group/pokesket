@@ -13,7 +13,16 @@ public class Zone2PtsDetector : MonoBehaviour
 
             if (collidersInZone == 1)
             {
-                teamZone = other.transform.parent.name.Contains("Red") ? TeamName.Red : TeamName.Blue;
+                BasketRim rim = other.GetComponentInParent<BasketRim>();
+                if (rim == null || rim.RimTeam == null)
+                {
+                    Debug.LogError($"2-point zone {other.name} has no owning team.");
+                    teamZone = null;
+                }
+                else
+                {
+                    teamZone = rim.RimTeam.teamName;
+                }
             }
         }
     }

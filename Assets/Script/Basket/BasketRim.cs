@@ -8,6 +8,7 @@ public class BasketRim : MonoBehaviour
     [SerializeField] private TextMeshProUGUI opponentScore;
     [SerializeField] private BasketTeam rimTeam;
     public Cloth netRimCloth;
+    public BasketTeam RimTeam => rimTeam;
 
     private bool hasEnteredFromTop = false;
     private bool hasScored = false;
