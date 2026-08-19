@@ -51,7 +51,7 @@ public class BlockPass : MonoBehaviour
     
     private IEnumerator DashTowards(Vector3 dashTarget, bool success, float dashLengthMultiplier)
     {
-        _pokemonPlayer.isBlockingShoot = true;
+        _pokemonPlayer.isBlockingPass = true;
         _pokemonPlayer.canBlock = false;
 
         float elapsed = 0f;
@@ -72,7 +72,7 @@ public class BlockPass : MonoBehaviour
         }
 
         yield return new WaitForSeconds(0.3f);
-        _pokemonPlayer.isBlockingShoot = false;
+        _pokemonPlayer.isBlockingPass = false;
 
         if (!success)
         {
